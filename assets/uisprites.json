@@ -1,0 +1,310 @@
+[
+  {
+    "name": "sprite25",
+    "x": 64,
+    "y": 64,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite35",
+    "x": 64,
+    "y": 96,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite44",
+    "x": 64,
+    "y": 64,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite46",
+    "x": 64,
+    "y": 80,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite47",
+    "x": 64,
+    "y": 64,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite51",
+    "x": 64,
+    "y": 96,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite52",
+    "x": 64,
+    "y": 96,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite53",
+    "x": 64,
+    "y": 80,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite54",
+    "x": 64,
+    "y": 96,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite55",
+    "x": 64,
+    "y": 80,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "panel_transparent",
+    "x": 128,
+    "y": 80,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite58",
+    "x": 64,
+    "y": 96,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite60",
+    "x": 64,
+    "y": 96,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite61",
+    "x": 64,
+    "y": 96,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "sprite62",
+    "x": 64,
+    "y": 96,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "panel_locked",
+    "x": 160,
+    "y": 48,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "button_panel",
+    "x": 112,
+    "y": 64,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "button_panel_pressed",
+    "x": 112,
+    "y": 80,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "panel_scrollarea",
+    "x": 144,
+    "y": 64,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "btn_arrow",
+    "x": 144,
+    "y": 32,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "btn_arrow_pressed",
+    "x": 160,
+    "y": 32,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "panel_alt",
+    "x": 128,
+    "y": 64,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "progress_alt_outline",
+    "x": 128,
+    "y": 48,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "progress_alt",
+    "x": 144,
+    "y": 48,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "panel",
+    "x": 112,
+    "y": 48,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "button_alt",
+    "x": 112,
+    "y": 32,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "button_alt_pressed",
+    "x": 128,
+    "y": 32,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "skill_frame_neg",
+    "x": 32,
+    "y": 0,
+    "width": 32,
+    "height": 32
+  },
+  {
+    "name": "button",
+    "x": 64,
+    "y": 0,
+    "width": 48,
+    "height": 32
+  },
+  {
+    "name": "button_pressed",
+    "x": 112,
+    "y": 0,
+    "width": 48,
+    "height": 32
+  },
+  {
+    "name": "barrow",
+    "x": 0,
+    "y": 128,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "tarrow",
+    "x": 16,
+    "y": 128,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "barrow_pressed",
+    "x": 32,
+    "y": 128,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "tarrow_pressed",
+    "x": 48,
+    "y": 128,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "rarrow",
+    "x": 0,
+    "y": 144,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "larrow",
+    "x": 16,
+    "y": 144,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "rarrow_pressed",
+    "x": 32,
+    "y": 144,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "larrow_pressed",
+    "x": 48,
+    "y": 144,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "buy_field",
+    "x": 0,
+    "y": 160,
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "skill_frame",
+    "x": 0,
+    "y": 0,
+    "width": 32,
+    "height": 32
+  },
+  {
+    "name": "progress_outline",
+    "x": 0,
+    "y": 32,
+    "width": 112,
+    "height": 16
+  },
+  {
+    "name": "progress_bar",
+    "x": 0,
+    "y": 48,
+    "width": 112,
+    "height": 16
+  },
+  {
+    "name": "generator_panel",
+    "x": 0,
+    "y": 64,
+    "width": 64,
+    "height": 48
+  },
+  {
+    "name": "item_info",
+    "x": 0,
+    "y": 112,
+    "width": 48,
+    "height": 16
+  }
+]
