@@ -109,6 +109,12 @@
         h1 {
             text-align: center;
         }
+        .green {
+            color: rgb(59, 177, 59)
+        }
+        .red {
+            color: rgb(182, 76, 76)
+        }
     </style>
 </head>
 <body>
@@ -281,9 +287,9 @@
             var decS = woodDecrease();
 
             if (incS > decS) {
-                message = "Full in " + formatTime(Math.floor((woodCap - woodCont) / (incS - decS)));
+                message = "<span class='green'>Full in " + formatTime(Math.floor((woodCap - woodCont) / (incS - decS))) + "</span>";
             } else {
-                message = "Empty in " + formatTime(Math.floor((woodCont) / (decS - incS)));
+                message = "<span class='red'>Empty in " + formatTime(Math.floor((Math.max(0, woodCont)) / (decS - incS))) + "</span>";
             }
             return message;
         }
@@ -312,9 +318,9 @@
             }
 
             if (incS > decS) {
-                message = "Full in " + formatTime(Math.floor((orbCap - orbs) / (incS - decS)));
+                message = "<span class='green'>Full in " + formatTime(Math.floor((orbCap - orbs) / (incS - decS))) + "</span>";
             } else {
-                message = "Empty in " + formatTime(Math.floor((orbs) / (decS - incS)));
+                message = "<span class='red'>Empty in " + formatTime(Math.floor((orbs) / (decS - incS))) + "</span>";
             }
             return message + "<br>" + statS;
         }
@@ -360,7 +366,7 @@
                 tooltip.style.setProperty("--x", rect.left + "px");
                 tooltip.style.setProperty("--y", rect.top + rect.height + "px")
                 if (text != null) {
-                   tooltip.textContent = text; 
+                   tooltip.innerHTML = text; 
                 }
             });
             elem.addEventListener('mouseout', function () {
@@ -486,7 +492,7 @@
             var lvlsBar = document.getElementById("lvls-bar");
 
             if (tooltipIsOver != null && tooltipIsOver == woodBar) {
-                tooltip.textContent = estimateCapacityBound();
+                tooltip.innerHTML = estimateCapacityBound();
             } else if (tooltipIsOver != null && tooltipIsOver == lvlsBar) {
                 tooltip.innerHTML = estimateCapacityBoundOrbs();
             }
