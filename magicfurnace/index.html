@@ -1,0 +1,559 @@
+<head>
+    <title>Magic furnace</title>
+    <style>
+        html {
+            background: grey;
+        }
+        * {
+            color: white;
+        }
+        #app {
+        }
+        .resource-row {
+            padding: 4px;
+            display: flex;
+            flex-direction: row;
+            width: 400px;
+            background-color: blue;
+            background-image:linear-gradient(to right,transparent 0%,transparent calc(var(--fill) - 1px),#373737 calc(var(--fill) + 1px),#373737 100%);
+        }
+        .bar {
+            display: flex;
+            flex-direction: row;
+            width: 400px;
+            background-color: blue;
+            background-image:
+            linear-gradient(to right,transparent 0%,transparent calc(var(--fill) - 1px),#373737 calc(var(--fill) + 1px),#373737 100%);
+        }
+        .row-footer {
+            position: absolute;
+            background-color: rgb(250, 105, 8);
+            background-image:
+                linear-gradient(to right,transparent 0%,transparent calc(var(--fill2) - 1px),#373737 calc(var(--fill2) + 1px),#373737 100%);
+
+            height: 4px;
+            width: 100%;
+            bottom: -2px;
+            left: 0px;
+        }
+        .filled {
+            border: 2px solid green;
+            cursor: pointer;
+            /* box-sizing: border-box; */
+        }
+        .col {
+            flex: 1;
+        }
+        .locked {
+            display: none !important;
+        }
+
+        .vertical-text {
+            writing-mode: vertical-rl;
+        }
+        .row {
+            position: relative;
+            display: flex;
+            padding: 4px;
+        }
+        #filler {
+            width: 416px;
+        }
+        .box {
+            min-width: 40px;
+            min-height: 40px;
+            margin: 4px;
+        }
+        .btn {
+            background: linear-gradient(rgb(191, 203, 213, 1.0), #2c3c4b);
+            color: white;
+        }
+        .tip {
+            padding: 0px 4px;
+        }
+        .card {
+            /* background: linear-gradient(rgb(191, 203, 213, 1.0), #2c3c4b); */
+            background: #2c3c4b;
+            padding: 4px;
+            min-width: 10px;
+            text-align: center;
+            border-radius: 10%;
+            border: 1px solid black;
+        }
+        .disabled {
+            color: grey;
+            background: linear-gradient(rgb(191, 203, 213, 0.2), #2c3c4b);
+            cursor: not-allowed;
+        }
+        .hidden {
+            visibility: hidden;
+        }
+        .container {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0px;
+        }
+        #tooltip {
+            position: absolute;
+            display: none;
+            background-color: rgb(10, 10, 10);
+            color: #fff;
+            padding: 5px;
+            /* border-radius: 5px; */
+            font-size: 12px;
+            pointer-events: none;
+            left: calc(var(--x) + 10px);
+            top: calc(var(--y) + 10px);
+            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .green {
+            color: rgb(59, 177, 59)
+        }
+        .red {
+            color: rgb(182, 76, 76)
+        }
+    </style>
+</head>
+<body>
+    <button class="btn" onclick="localStorage.clear();location.reload();">reset</button>
+    <div id="app">
+        <div id="resources"></div>
+        <div id="generators">
+
+        </div>
+        
+        <div id="tooltip">
+            hello
+        </div>
+    </div>
+    <script type="text/javascript">
+        var cards = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+
+        var generators = {};
+        var generatorList = [];
+        class Generator {
+            constructor(name, orbs, ivl, dec, cost, locked = true)
+            {
+                this.name = name;
+                this.id = generatorList.length;
+
+                this.active = false;
+                this.count = 0;
+                this.orbs = orbs;
+                this.cost = cost;
+                this.elapsed = 0;
+                this.ivl = ivl;
+                this.dec = dec;
+                this.locked = locked;
+
+                this.elements = {
+                    cnt: null,
+                    inc: null,
+                    upg: null,
+                    btns: {}
+                }
+
+                generators[this.name] = this;
+                generatorList.push(this);
+            }
+
+            
+            renderOnce() {
+
+            }
+
+            getLvl() {
+                return Math.floor(this.count / 10);
+            }
+
+            getMult() {
+                var mult = Math.pow(2, Math.floor(this.count / 10));
+                return mult;
+            }
+
+            getCost() {
+                var cost = Math.pow(1.2, this.count) * this.cost;
+                return cost;
+            }
+
+            getStorage() {
+                return this.dec * this.count * this.getMult();
+            }
+
+            render() {
+                if (tooltipIsOver == this.elements.bar) {
+                    tooltip.innerHTML = this.name + " " + formatNumber(this.getCost())
+                    + "<br> -" + formatNumber(this.dec * this.count) + " wood every " + formatTime(this.ivl)
+                    + "<br> +" + formatNumber(this.getStorage()) + " MAX Wood"
+                }
+                var ratio = this.count == 0 ? 0 : this.elapsed / this.ivl;
+                this.elements.cnt.textContent = this.count;
+                this.elements.btn.classList.toggle("disabled", Math.pow(1.2, this.count) * this.cost > orbs);
+                this.elements.bar.style.setProperty("--fill", !this.active ? "0%" : `${ratio * 100}%`);
+                this.elements.bar.style.setProperty("--fill2", ((this.count % 10) / 10) * 100 + "%");
+
+                var prevOrNull = this.id == 0 ? null : generatorList[this.id - 1];
+                var locked = !(prevOrNull == null || prevOrNull.count > 0);
+                this.elements.bar.classList.toggle("locked", locked);
+
+                for (var i = 0; i < cards.length; i++) {
+                    var card = document.getElementById(`gen-${this.id}-card-${i}`);
+                    card.classList.toggle("disabled", this.getLvl() == i);
+                    card.classList.toggle("locked", locked || this.getLvl() <= i - 1);
+                }
+            }
+        }
+
+        var tooltip = document.getElementById("tooltip");
+
+        var generatorsContainer = document.getElementById("generators");
+        var resourcesContainer = document.getElementById("resources");
+
+        var lvl = 0;
+        var orbs = 0;
+        var orbCap = 10;
+        var wood = 0;
+        var woodCap = 100;
+        var woodCont = 0;
+
+        // orbs, ivl, dec, cost
+        new Generator("Dusty furnace", 1, 1, 1, 10, false);
+        new Generator("Apprentice furnace", 8, 3, 10, 60);
+        new Generator("Adept furnace", 65, 10, 100, 400);
+        new Generator("Master furnace", 500, 30, 1e3, 2500);
+        new Generator("Archfurnace", 2200, 60, 5e3, 16e3);
+        new Generator("Apex furnace", 10e3, 120, 25e3, 100e3);
+        new Generator("Infernal furnace", 33.333e3, 200, 100e3, 600e3);
+        new Generator("Dimensional furnace", 100e3, 300, 400e3, 3.5e6);
+        new Generator("Multiverse furnace", 220e3, 400, 1e6, 21e6);
+        new Generator("Impossible furnace", 400e3, 500, 2e6, 130e6);
+        new Generator("Cheat furnace", 800e3, 600, 5e6, 800e6);
+
+        generatorList[0].count = 1;
+
+
+        var cardHtml = "";
+        for (var i = 0; i < cards.length; i++) {
+            var card = cards[i];
+            cardHtml += `<div class="card disabled locked" id="lvls-card-${i}">${card}</div>`;
+        }
+        resourcesContainer.innerHTML += `<div class="container"><div class="row bar" id="lvls-bar">
+            <div class="col" id="lvls-name">Lvl.</div>
+            <div class="col" id="lvls-cnt">0</div>
+            <div class="tip" id="lvls-inc">0/s</div>
+            <button class="btn disabled" id="lvls-btn">+</button>
+            <div class="row-footer"></div>
+        </div>
+        ${cardHtml}
+        </div>`;
+        resourcesContainer.innerHTML += `<div class="container"><div class="row bar" id="wood-bar">
+            <div class="col" id="wood-name">Wood</div>
+            <div class="col" id="wood-cnt">0</div>
+            <div class="tip" id="wood-inc">0/s</div>
+            <button class="btn disabled" id="wood-btn">+</button>
+            <div class="row-footer"></div>
+        </div></div>`;
+
+        for (var generator of generatorList) {
+            var cardHtml = "";
+            for (var i = 0; i < cards.length; i++) {
+                var card = cards[i];
+                cardHtml += `<div class="card" id="gen-${generator.id}-card-${i}">${card}</div>`;
+            }
+            generatorsContainer.innerHTML += `<div class="container"><div class="row bar" id="gen-${generator.id}-bar">
+                <div class="col" id="gen-${generator.id}-name">${generator.name}</div>
+                <div class="col" id="gen-${generator.id}-cnt">0</div>
+                <button class="btn disabled" id="gen-${generator.id}-btn">+</button>
+                <div class="row-footer"></div>
+                </div>
+                ${cardHtml}
+                </div>`;
+        }
+        function woodDecrease() {
+            var decS = 0;
+            for (var generator of generatorList) {
+                if (generator.active) {
+                    decS += (generator.count * generator.dec) / generator.ivl;
+                }
+            }
+            return decS;
+        }
+        function estimateCapacityBound() {
+            var message = "";
+            var incS = woodIncome();
+            var decS = woodDecrease();
+
+            if (incS > decS) {
+                message = "<span class='green'>Full in " + formatTime(Math.floor((woodCap - woodCont) / (incS - decS))) + "</span>";
+            } else {
+                message = "<span class='red'>Empty in " + formatTime(Math.floor((Math.max(0, woodCont)) / (decS - incS))) + "</span>";
+            }
+            return message;
+        }
+
+        function orbsIncrease()
+        {
+            var incS = 0;
+            for (var generator of generatorList) {
+                if (generator.active) {
+                    incS += (generator.count * generator.orbs) / generator.ivl;
+                }
+            }
+            return incS;
+        }
+
+        function estimateCapacityBoundOrbs() {
+            var message = "";
+            var incS = 0;
+            var decS = 0;
+            var statS = "";
+            for (var generator of generatorList) {
+                if (generator.active) {
+                    incS += (generator.count * generator.orbs) / generator.ivl;
+                    statS += `${generator.name} - +${formatNumber((generator.count * generator.orbs) / generator.ivl)}/s<br>`;
+                }
+            }
+
+            if (incS > decS) {
+                message = "<span class='green'>Full in " + formatTime(Math.floor((orbCap - orbs) / (incS - decS))) + "</span>";
+            } else {
+                message = "<span class='red'>Empty in " + formatTime(Math.floor((orbs) / (decS - incS))) + "</span>";
+            }
+            return message + "<br>" + statS;
+        }
+         
+        function formatTime(seconds) {
+            if (isNaN(seconds)) {
+                return "Never";
+            }
+            
+            if (seconds == Infinity) {
+                return "Never";
+            }
+            if (seconds < 60) {
+                return seconds + "s";
+            } else if (seconds < 3600) {
+                return Math.floor(seconds / 60) + "m" + " " + formatTime(seconds % 60);
+            } else if (seconds < 86400) {
+                return Math.floor(seconds / 3600) + "h" + " " + formatTime(seconds % 3600);
+            } else {
+                return Math.floor(seconds / 86400) + "d" + " " + formatTime(seconds % 86400);
+            }
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000000000) {
+                return (num / 1000000000000).toFixed(2) + "T";
+            } else if (num >= 1000000000) {
+                return (num / 1000000000).toFixed(2) + "B";
+            } else if (num >= 1000000) {
+                return (num / 1000000).toFixed(2) + "M";
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(2) + "K";
+            } else {
+                return num.toFixed(2);
+            }
+        }
+
+        function attachTooltip(elem, text = null) {
+            elem.addEventListener('mouseover', function () {
+                tooltipIsOver = elem;
+                tooltip.style.display = "block";
+                var rect = elem.getBoundingClientRect();
+                tooltip.style.setProperty("--x", rect.left + "px");
+                tooltip.style.setProperty("--y", rect.top + rect.height + "px")
+                if (text != null) {
+                   tooltip.innerHTML = text; 
+                }
+            });
+            elem.addEventListener('mouseout', function () {
+                tooltipIsOver = null;
+                tooltip.style.display = "none";
+            });
+        }
+
+        var woodBar = document.getElementById("wood-bar");
+        var lvlsBar = document.getElementById("lvls-bar");
+
+        var tooltipIsOver = null;
+
+        attachTooltip(lvlsBar);
+        attachTooltip(woodBar);
+
+        var woodBtn = document.getElementById("wood-btn");
+        var woodInc = document.getElementById("wood-inc");
+        var lvlsBtn = document.getElementById("lvls-btn");
+        woodBtn.classList.toggle("disabled", wood >= woodCap);
+        lvlsBtn.onclick = function() {
+            if (orbs == orbCap) {
+                orbs = 0;
+                lvl++;
+                orbCap = Math.floor(orbCap * 1.3);
+            }
+        }
+        woodBtn.onclick = function() {
+            if (wood < woodCap) {
+                wood += (lvl + 1);
+                woodCont += (lvl + 1);
+            }
+        }
+        // resourcesContainer.innerHTML += `<div class="row bar" id="orbs-bar">
+        //     <div class="col" id="orbs-name">Orbs</div>
+        //     <div class="col" id="orbs-cnt">0</div>
+        // </div>`;
+
+        for (var i = 0; i < cards.length; i++) {
+            let card = document.getElementById(`lvls-card-${i}`);
+            attachTooltip(card, `Boost income by 100%`);
+        }
+        for (let generator of generatorList) {
+            generator.elements.bar = document.getElementById(`gen-${generator.id}-bar`);
+            generator.elements.cnt = document.getElementById(`gen-${generator.id}-cnt`);
+            generator.elements.btn = document.getElementById(`gen-${generator.id}-btn`);
+            generator.elements.btn.addEventListener("click", function() {
+                if (Math.pow(1.2, generator.count) * generator.cost <= orbs) {
+                    orbs -= Math.pow(1.2, generator.count) * generator.cost;
+                    generator.count++;
+                }
+            });
+            attachTooltip(generator.elements.bar);
+            for (let i = 0; i < cards.length; i++) {
+                let card = document.getElementById(`gen-${generator.id}-card-${i}`);
+                attachTooltip(card, `Boost storage by 100%`);
+            }
+        }
+
+        function woodIncome() {
+            var lvlMult = Math.pow(2, Math.floor(lvl / 10));
+            var woodIncS = lvlMult * Math.max(0, lvl - 3);
+            return woodIncS;
+        }
+
+        function saveGame() {
+            var gameSave = {
+                lvl,
+                orbs,
+                orbCap,
+                wood,
+                woodCap,
+                generators: [],
+            }
+            
+            for (var generator of generatorList || []) {
+                gameSave.generators.push({
+                    name: generator.name,
+                    count: generator.count,
+                    elapsed: generator.elapsed,
+                    active: generator.active
+                });
+            }
+
+            localStorage.setItem("gameSave", JSON.stringify(gameSave));
+        }
+
+        function loadGame() {
+            var gameSave = JSON.parse(localStorage.getItem("gameSave") ||  "{}");
+            lvl = gameSave.lvl || lvl;
+            orbs = gameSave.orbs || orbs;
+            orbCap = gameSave.orbCap || orbCap;
+            wood = gameSave.wood || wood;
+            woodCap = gameSave.woodCap || woodCap;
+            
+            woodCont = wood;
+
+            for (var generator of gameSave.generators || []) {
+                generators[generator.name].count = generator.count;
+                generators[generator.name].elapsed = generator.elapsed;
+                generators[generator.name].active = generator.active;
+            }
+        }
+
+        var saveTime = 1000;
+        var lastSave = Date.now();
+        var delta = 0.05;
+        loadGame();
+        function update() {
+            woodCont += (woodIncome() - woodDecrease()) * delta;
+            woodCont = Math.min(woodCap, woodCont);
+
+            if (Date.now() - lastSave > saveTime) {
+                lastSave = Date.now();
+                saveGame();
+            }
+            var woodCnt = document.getElementById("wood-cnt");
+            var woodBar = document.getElementById("wood-bar");
+
+            var lvlsName = document.getElementById("lvls-name");
+            var lvlsCnt = document.getElementById("lvls-cnt");
+            var lvlsInc = document.getElementById("lvls-inc");
+            var lvlsBar = document.getElementById("lvls-bar");
+
+            if (tooltipIsOver != null && tooltipIsOver == woodBar) {
+                tooltip.innerHTML = estimateCapacityBound();
+            } else if (tooltipIsOver != null && tooltipIsOver == lvlsBar) {
+                tooltip.innerHTML = estimateCapacityBoundOrbs();
+            }
+
+            woodCap = 100;
+
+            for (var generator of generatorList) {
+
+                if (generator.count > 0) {
+                    if (generator.active) {
+                        generator.elapsed += delta;
+                        if (generator.elapsed >= generator.ivl) {
+                            generator.elapsed -= generator.ivl;
+                            generator.active = false;
+                            orbs += generator.orbs * generator.count;
+                            orbs = Math.min(orbs, orbCap);
+                        }
+                    }
+                    if (!generator.active) {
+                        if (wood >= generator.dec * generator.count) {
+                            wood -= generator.dec * generator.count;
+                            generator.active = true;
+                        }
+                    }
+                }
+                woodCap += generator.getStorage();
+
+                generator.render();
+            }
+
+            var lvlLvl = Math.floor(lvl / 10);
+            for (var i = 0; i < cards.length; i++) {
+                var card = document.getElementById(`lvls-card-${i}`);
+                card.classList.toggle("disabled", lvlLvl == i);
+                card.classList.toggle("locked", lvlLvl <= i - 1);
+            }
+
+
+            var woodIncS = woodIncome();
+
+
+            wood += woodIncS * delta;
+            wood = Math.min(wood, woodCap);
+            woodCnt.textContent = `${formatNumber(wood)} / ${formatNumber(woodCap)}`;
+            woodBar.style.setProperty("--fill", wood / woodCap * 100 + "%");
+            woodBar.style.setProperty("--fill2", "0%");
+            
+            lvlsCnt.textContent = `${formatNumber(orbs)} / ${formatNumber(orbCap)}`;
+            lvlsBar.style.setProperty("--fill", orbs / orbCap * 100 + "%");
+            lvlsBar.style.setProperty("--fill2", ((lvl % 10) / 10) * 100 + "%");
+            lvlsName.textContent = `Lvl. ${lvl}`;
+            lvlsInc.textContent = `+ ${formatNumber(orbsIncrease())} / s`;
+            var lvlsBtn = document.getElementById("lvls-btn");
+            lvlsBtn.classList.toggle("disabled", orbs != orbCap);
+            woodInc.textContent = `+ ${woodIncS} / s`;
+
+            // orbsCnt.textContent = orbs;
+            // orbsBar.style.setProperty("--fill", 0 + "%");
+        }
+
+        setInterval(update, 1 / delta);
+
+    </script>
+</body>
