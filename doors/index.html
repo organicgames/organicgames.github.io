@@ -1,0 +1,748 @@
+<head>
+    <title>Doors</title>
+    <style>
+        html {
+            user-select: none;
+            background-image: url('Wallpaper.png');
+            background-repeat: repeat;
+            overflow: hidden
+        }
+        .hidden {
+            display: none !important;
+        }
+        .line {
+            display: flex;
+            flex-direction: row;
+        }
+        .hbox {
+            display: flex;
+            flex-direction: row;
+        }
+        .vbox {
+            display: flex;
+            flex-direction: column;
+        }
+        .overlay {
+            position: absolute;
+            z-index: 100;
+        }
+        .particle {
+            position: absolute;
+        }
+        .bypass {
+            pointer-events: none;
+        }
+        .drop {
+            animation: popScatter 1s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+        }
+        .floating-text {
+            position: absolute;
+            pointer-events: none;
+            font-weight: bold;
+            font-size: 24px;
+            color: rgb(84, 189, 84);
+            
+            animation: floatUpAndFade 1.2s ease-out forwards;
+        }
+        .container {
+            position: relative;
+        }
+        .center {
+            width: 100%;
+            top: 28px;
+            color: rgb(0, 174, 255);
+            text-shadow: #474747 1px 4px 1px;
+            font-weight: bold;
+            font-size: 32px;
+            text-align: center;
+        }
+        .moveX {
+            transform: translateX(calc(var(--x) * 1px));
+        }
+        @keyframes floatUpAndFade {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            20% {
+                transform: translateY(-10px) scale(1.3); /* Slight "pop" effect */
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(1); /* Move up 80px */
+            }
+        }
+        @keyframes popScatter {
+            0% {
+            transform: translate(0, 0) scale(0);
+            opacity: 0;
+            }
+            15% {
+            transform: translate(calc(var(--drop-x) * 0.15), -30px) scale(1) rotate(calc(var(--drop-rot) * 0.15));
+            opacity: 1;
+            }
+            100% {
+            transform: translate(calc(var(--drop-x) * 0.5), 100px) rotate(calc(var(--drop-rot) * 0.5));
+            }
+        }
+        #gnomes {
+            z-index: 10;
+        }
+        #effects {
+            z-index: 999 !important;
+        }
+        .hstretch {
+            height: 100%;
+            align-items: center;
+        }
+        .full {
+            width: 100%;
+            justify-content: center;
+        }
+        .overlay-container {
+            position: relative;
+        }
+        body {
+            position: relative;
+        }
+        .label {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .head {
+            top: -12px;
+            width: 100%;
+            text-align: center;
+
+        }
+        .emphasis {
+            border: 1px solid black;
+        }
+        .clickable:hover {
+            cursor: pointer;
+            animation: pulse2 0.2s ease-in-out;
+        }
+        img.clickable {
+            /* display: block; */
+            animation: pulse 0.2s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes pulse2 {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #buyDoor {
+        }
+        .upgrade-container {
+            position: relative;
+        }
+        .upgrade-container.expensive img {
+            filter: brightness(0.3);
+        }
+        .upgrade-container.locked img {
+            filter: brightness(0);
+        }
+        .locked {
+            filter: brightness(0);
+        }
+        #upgrades {
+            position: absolute;
+            padding-top: 40px;
+        }
+        .sale-label {
+            position: absolute;
+            top: 24px;
+            left: 22px;
+            width: 110px;
+            color: red;
+            font-weight: bold;
+            text-align: center;
+        }
+        .expensive .sale-label {
+            color: rgb(160, 23, 23)
+        }
+        #oven {
+            position: absolute;
+            top: 100px;
+        }
+        #research {
+            position: absolute;
+            right: 0px;
+            padding-top: 40px;
+        }
+        .card {
+            position: relative;
+            width: 200px;
+            height: 100px;
+            box-sizing: border-box;
+            border-radius: 10px;
+            box-shadow: 0px 2px 2px;
+            padding: 8px;
+            background-color: rgba(25, 208, 245, 0.5);
+        }
+        .card img {
+            float: left;
+        }
+        .progress {
+            height: 32px;
+            border: 2px solid black;
+            border-radius: 8px;
+        }
+        .progress-fill {
+            height: 32px;
+            background-image: url('wrap.png');
+            background-repeat: repeat;
+            border-radius: 8px;
+            clip-path: inset(0 calc(100% - (var(--progress) * 100%)) 0 0);
+        }
+        .door img {
+            pointer-events: none;
+        }
+        .dragging {
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay progress full hidden">
+        <div id="progress" class="progress-fill"></div>
+    </div>
+    <!-- <img src="Cat.gif"/> -->
+    <div id="upgrades">
+        <div id="buyDoorCard" class="upgrade-container locked">
+            <img id="buyDoor" class="clickable" src="Item1.png" height="110" width="110"/>
+            <span id="buyDoorPrice" class="sale-label">$10</span>
+        </div>
+        <div id="buyOvenCard" class="upgrade-container locked">
+            <img id="buyOven" class="clickable" src="Item2.png" height="110" width="110"/>
+            <span id="buyOvenPrice" class="sale-label">$100</span>
+        </div>
+        <div id="buyGnomeCard" class="upgrade-container locked">
+            <img id="buyGnome" class="clickable" src="Item3.png" height="110" width="110"/>
+            <span id="buyGnomePrice" class="sale-label">$1K</span>
+        </div>
+    </div>
+    <div clas="hidden" id="research">
+        <div class="card clickable hidden">
+            <img class="clickable" src="DoorIcon.png" height="32" width="32"/> <b>Faster doors</b>
+            <br>
+            <br>
+            door closing in 0.8s
+            <br>
+            <div style="position: absolute; top: 0px; right: 0px; padding: 8px;">
+                <img class="clickable" src="FoodIcon.png" height="24" width="24"/> <b>3</b>
+            </div>
+        </div>
+    </div>
+
+    <div id="effects" class="overlay"></div>
+    <div id="app" class="vbox hstretch">
+        <div id="upgrades" class="hbox">
+            <div>
+                <p class="label" id="money">$0</p>
+                <div>
+
+                </div>
+            </div>
+        </div>
+        <div id="oven" class="hidden">
+            <img id="ovenOpen" class="clickable" src="OvenOpen.png" height="110" width="110"/>
+            <img id="ovenClose" class="clickable hidden" src="OvenClosed.png" height="110" width="110"/>
+        </div>
+        <div class="vbox hstretch full">
+            <div>
+                <button class="hidden" id="buyMerge">merge all</button>
+            </div>
+            <div class="container full vbox">
+                <div id="gnomes"></div>
+                <div id="doors" class="line full"></div>
+            </div>
+        </div>
+    </div>
+    <audio id="doorOpen">
+    <source src="minecraft-door-open.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="doorClose">
+    <source src="minecraft-door-close.mp3" type="audio/mpeg">
+    </audio>
+    <script type="text/javascript">
+        var doorsContainer = document.getElementById("doors");
+        var effectsContainer = document.getElementById("effects");
+        var gnomesContainer = document.getElementById("gnomes");
+
+        var buyDoorCard = document.getElementById("buyDoorCard");
+        var buyGnomeCard = document.getElementById("buyGnomeCard");
+        var buyOvenCard = document.getElementById("buyOvenCard");
+        var buyDoorButton = document.getElementById("buyDoor");
+        var buyGnomeButton = document.getElementById("buyGnome");
+        var buyOvenButton = document.getElementById("buyOven");
+        var buyDoorPrice = document.getElementById("buyDoorPrice");
+        var buyGnomePrice = document.getElementById("buyGnomePrice");
+        var buyOvenPrice = document.getElementById("buyOvenPrice");
+        var moneyLabel = document.getElementById("money");
+
+        var ovenContainer = document.getElementById("oven");
+        var ovenOpen = document.getElementById("ovenOpen");
+        var ovenClose = document.getElementById("ovenClose");
+
+        ovenOpen.addEventListener("click", function () {
+            ovenOpen.classList.toggle("hidden", true);
+            ovenClose.classList.toggle("hidden", false);
+            setTimeout(() => {
+                ovenOpen.classList.toggle("hidden", false);
+                ovenClose.classList.toggle("hidden", true);
+                playChickenDropAnimation(ovenOpen);
+            }, 1000)
+        })
+
+        var gnomeCount = 0;
+        var doorCount = 1;
+        var totalMoney = 0;
+        var money = 0;
+        var ovenCount = 0;
+        var mergeMode = false;
+        var cashdrops = {};
+        var activeDoor = null;
+
+        for (var i = 0; i <= 10; i++) {
+            doorsContainer.innerHTML += `<div class="hidden container door" id="door-${i}">
+                    <div class="head">
+                    <img id="door-${i}-merge" class="clickable hidden" src="add.png" height="20" width="20"/>
+                    <img id="door-${i}-cancel" class="clickable hidden" src="cancel.png" height="20" width="20"/>
+                    </div>
+                    
+                    <div id="door-${i}-lvl" class="overlay center"></div>
+                    <img id="door-${i}-closed" src="DoorAlt.png" height="128" width="64"/>
+                    <img class="hidden" id="door-${i}-opened" src="DoorOpen.png" height="128" width="64"/>
+                </div>`;
+        }
+        for (var i = 0; i <= 20; i++) {
+            effects.innerHTML += `<img class="particle hidden" id="cash-${i}" src="Cash.png" height="32" width="32"/>`;
+            effects.innerHTML += `<img class="particle hidden" id="food-${i}" src="Chicken.png" height="48" width="48"/>`;
+        }
+        for (var i = 0; i <= 10; i++) {
+            gnomesContainer.innerHTML += `<img style="top: 64px;" class="moveX particle hidden bypass" id="gnome-${i}" src="Gnome.png" height="64" width="64"/>`;
+        }
+        var dropCounter = 0;
+
+        function playSound(soundId) {
+            var audio = document.getElementById(soundId);
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = 0.2; 
+            audio.play();
+        }
+        
+        function spawnFloatingText(cash, value=1)
+        {
+            var span = document.createElement("span");
+            span.classList.add("floating-text");
+            span.classList.add("green");
+            span.textContent = `$${value}`;
+            var rect = cash.getBoundingClientRect();
+
+            span.style.top = rect.top;
+            span.style.left = rect.left;
+            effectsContainer.appendChild(span);
+            setTimeout(() => span.remove(), 1000    );
+        }
+        function playChickenDropAnimation(oven) {
+            if (dropCounter > 20) dropCounter = 0;
+            var food = document.getElementById(`food-${dropCounter++}`);
+
+            const drift = (Math.random() - 0.5) * 200; 
+            const jump = -(Math.random() * 90 + 30); 
+            const rotation = Math.random() * 720;
+            const duration = Math.random() * 0.6 + 0.6;
+            var rect = oven.getBoundingClientRect();
+
+            const distance = Math.floor(Math.random() * 120) + 60;
+            const direction = Math.random() > 0.5 ? 1 : -1;
+            const finalX = 2 * distance * direction;
+            const finalRot = 0; //Math.floor(Math.random() * 720) - 360;
+
+            food.style.top = rect.top + rect.height /2 + "px";
+            food.style.left = rect.left  + "px";;
+            food.style.setProperty('--drop-x', `${finalX}px`);
+            food.style.setProperty('--drop-rot', `${finalRot}deg`);
+
+            food.classList.toggle("hidden", false);
+
+            food.classList.remove('drop'); 
+            void food.offsetWidth;
+            food.classList.add("drop");
+            setTimeout(() => food.classList.toggle("landed", true), 800);
+            // setTimeout(() => {
+            //     if (food.classList.contains("landed")) {
+            //         despawnCash(food);
+            //     }
+            // }, 2000);
+        }
+        function playCashDropAnimation(doorObj)
+        {
+            var door = doorObj.open;
+
+            if (dropCounter > 20) dropCounter = 0;
+            var cashId = dropCounter++;
+            var cash = document.getElementById(`cash-${cashId++}`);
+            cash.dataset.id = cashId;
+            cash.dataset.value = Math.pow(2, doorObj.lvl); 
+
+            const drift = (Math.random() - 0.5) * 200; 
+            const jump = -(Math.random() * 90 + 30); 
+            const rotation = Math.random() * 720;
+            const duration = Math.random() * 0.6 + 0.6;
+            var rect = door.getBoundingClientRect();
+
+            const distance = Math.floor(Math.random() * 120) + 60;
+            const direction = Math.random() > 0.5 ? 1 : -1;
+            const finalX = 2 * distance * direction;
+            const finalRot = 0; //Math.floor(Math.random() * 720) - 360;
+
+            cash.style.top = rect.top + rect.height /2 + "px";
+            cash.style.left = rect.left  + "px";;
+            cash.style.setProperty('--drop-x', `${finalX}px`);
+            cash.style.setProperty('--drop-rot', `${finalRot}deg`);
+
+            cash.classList.toggle("hidden", false);
+
+            cash.classList.remove('drop'); 
+            void cash.offsetWidth;
+            cash.classList.add("drop");
+            setTimeout(() => cash.classList.toggle("landed", true), 800);
+            setTimeout(() => {
+                if (cash.classList.contains("landed")) {
+                    despawnCash(cash);
+                }
+            }, 2000);
+        }
+
+        function despawnFood(food)
+        {
+            food.classList.toggle("landed", false);
+            food.classList.toggle("hidden",  true);
+        }
+
+        function despawnCash(cash)
+        {
+            var value = parseFloat(cash.dataset.value);
+            totalMoney += value;
+            money += value;
+            spawnFloatingText(cash, value);
+            cash.classList.toggle("landed", false);
+            cash.classList.toggle("hidden",  true);
+        }
+
+        function doorPrice()
+        {
+            return 10 * Math.pow(1.2, doorCount - 1);
+        }
+
+        function gnomePrice()
+        {
+            return 25 * Math.pow(2, gnomeCount);
+        }
+
+        function addNewDoor()
+        {
+            for (var doorObj of doors)
+            {
+                if (doorObj.free) {
+                    doorObj.unlocked = true;
+                    doorObj.free = false;
+                    doorCount += 1;
+                    return;
+                }
+            }
+        }
+
+        buyDoorButton.addEventListener("click", function () {
+            if (money >= doorPrice()) {
+                money -= doorPrice();
+                doorCount += 1;
+                addNewDoor();
+            }
+        });
+        buyGnomeButton.addEventListener("click", function () {
+            if (money >= gnomePrice()) {
+                money -= gnomePrice();
+                gnomeCount += 1;
+            }
+        })
+        buyOvenButton.addEventListener("click", function () {
+
+        })
+
+        function cancelMerge(doorObj) {
+            mergeId = null;
+            doorObj.merge.classList.toggle("hidden", false);
+            doorObj.cancel.classList.toggle("hidden", true);
+        }
+
+        function openDoor(doorObj)
+        {
+            if (doorObj.free) return;
+            if (doorObj.dragging) return;
+            doorObj.closed = false;
+            doorObj.open.classList.toggle("hidden", false);
+            doorObj.close.classList.toggle("hidden", true);
+            playSound("doorOpen");
+            playCashDropAnimation(doorObj);
+            setTimeout(function () {
+                doorObj.closed = true;
+                playSound("doorClose");
+                doorObj.open.classList.toggle("hidden", true);
+                doorObj.close.classList.toggle("hidden", false);
+            }, 1000)
+        }
+        function moveDoorToPos(door, x, y) {
+            door.style.transform = `translate(${x}px, ${y}px)`;
+        }
+        function getNearestDoor(x, y) {
+            var offsetX = 16;
+            for (var doorObj of doors) {
+                if (doorObj.free) continue;
+                var rect = doorObj.door.getBoundingClientRect();
+
+                var isInside = x >= rect.left + offsetX && 
+                         x <= rect.right - offsetX && 
+                         y >= rect.top && 
+                         y <= rect.bottom;
+
+                if (isInside) {
+                    return doorObj;
+                }
+            }
+            return null;
+        }
+        function resetDoor(doorObj)
+        {
+            doorObj.lvl = 0;
+            doorObj.closed = true;
+            doorObj.free = true;
+            doorObj.dragging = false;
+        }
+        var offsetX = 0;
+        var offsetY = 0;
+
+        window.addEventListener('pointermove', (e) => {
+            if (!activeDoor) return;
+
+            var boardRect = doorsContainer.getBoundingClientRect();
+            var x = e.clientX - boardRect.left - offsetX;
+            var y = e.clientY - boardRect.top - offsetY;
+
+            moveDoorToPos(activeDoor.door, x, y);
+        });
+        window.addEventListener('pointerup', (e) => {
+            moveDoorToPos(activeDoor.door, 0, 0);
+            activeDoor.door.classList.toggle("dragging", false);
+            activeDoor.dragging = false;
+            var x = e.clientX;
+            var y = e.clientY;
+            var doorObj = getNearestDoor(x, y);
+            if (doorObj != null && doorObj != activeDoor && doorObj.lvl == activeDoor.lvl) {
+                resetDoor(activeDoor);
+                doorObj.lvl += 1;
+            }
+            activeDoor = null;
+        });
+        var doors = [];
+        var gnomes = [];
+        
+        for (var i = 0; i <= 10; i++) {
+            let door = document.getElementById(`door-${i}`);
+            let doorLvl = document.getElementById(`door-${i}-lvl`);
+            let doorMerge = document.getElementById(`door-${i}-merge`);
+            let doorCancel = document.getElementById(`door-${i}-cancel`);
+            let doorClose = document.getElementById(`door-${i}-closed`);
+            let doorOpen = document.getElementById(`door-${i}-opened`);
+            let doorObj = {id: i, lvl: 0, open: doorOpen, merge: doorMerge, cancel: doorCancel, close: doorClose,
+                            unlocked: false, dragging: false, lvlLabel:doorLvl, door, closed: true, free: true };
+            door.addEventListener("pointerdown", function (e) {
+                if (activeDoor != null) return;
+                if (doorObj.free) return;
+                doorObj.dragging = true;
+                // doorObj.closed = true;
+                activeDoor = doorObj;
+                const rect = activeDoor.door.getBoundingClientRect();
+                offsetX = e.clientX;
+                offsetY = e.clientY - rect.top;
+                door.classList.toggle("dragging", true);
+            })
+            doors.push(doorObj);
+            door.addEventListener("click", function (e) {
+                if (doorObj.closed) {
+                    openDoor(doorObj);
+                }
+            });
+        }
+        for (var i = 0; i <= 10; i++) {
+            let gnome = document.getElementById(`gnome-${i}`);
+            gnome.style.left = window.innerWidth / 2 + "px";
+            gnomes.push({ gnome, unlocked: false });
+        }
+        for (var i = 0; i <= 20; i++) {
+            let cash = document.getElementById(`cash-${i}`);
+            cash.addEventListener("mouseover", function () {
+                if (cash.classList.contains("landed")) {
+                    despawnCash(cash);
+                }
+            }) 
+            let food = document.getElementById(`food-${i}`);
+            food.addEventListener("mouseover", function () {
+                if (food.classList.contains("landed")) {
+                    despawnFood(food);
+                }
+            }) 
+
+        }
+        function formatNumber(n) {
+            if (n < 1000) {
+                return Math.round(n);
+            } else {
+                var pow = Math.floor(Math.log(n) / Math.log(1000));
+                return (n / Math.pow(1000, pow)).toFixed(2) + " " + "KMBTQ".charAt(pow - 1);
+            }
+        }
+
+        function ovenPrice()
+        {
+            return 100 * Math.pow(2, ovenCount);
+        }
+
+        function checkWhatToUnlock()
+        {
+            moneyLabel.classList.toggle("hidden", totalMoney < 1)
+            // ovenContainer.classList.toggle("hidden", ovenLevel == 0)
+            buyDoorCard.classList.toggle("hidden", totalMoney < 5);
+            buyDoorCard.classList.toggle("locked", totalMoney < 10);
+            buyOvenCard.classList.toggle("hidden", totalMoney < 10);
+            buyOvenCard.classList.toggle("locked", totalMoney < 50);
+            buyGnomeCard.classList.toggle("hidden", totalMoney < 50);
+            buyGnomeCard.classList.toggle("locked", totalMoney < 200);
+            buyDoorCard.classList.toggle("expensive", money < doorPrice());
+            buyOvenCard.classList.toggle("expensive", money < ovenPrice());
+            buyGnomeCard.classList.toggle("expensive", money < gnomePrice());
+            // buyGnomeCard.classList.toggle("hidden", totalMoney <= 500);
+
+        }
+
+        // doorCount += 1;
+        // gnomeCount += 4;
+
+        function gnomeMovementLogic()
+        {
+            var unlockedDoors = doors.filter(obj => !obj.free && obj.closed && !obj.dragging);
+            var unlockedGnomes = gnomes.filter(obj => obj.unlocked);
+
+            var targets = [];
+            for (var gnome of unlockedGnomes) {
+                var gnomeRect = gnome.gnome.getBoundingClientRect();
+                var gnomeX = gnomeRect.left;
+                var closestDist = Infinity;
+                var closestDoor = null;
+                for (var door of unlockedDoors) {
+                    var doorRect = door.door.getBoundingClientRect();
+                    var doorX = doorRect.left;
+                    if (Math.abs(gnomeX - doorX) < closestDist && !targets.includes(door)) {
+                        closestDist = Math.abs(gnomeX - doorX);
+                        closestDoor = door;
+                    }
+                }
+                if (closestDoor != null) {
+                    targets.push(closestDoor);
+                    gnome.target = closestDoor;
+                }
+            }
+        }
+
+        var delta = 16;
+        checkWhatToUnlock();
+
+        addNewDoor();
+        // addNewDoor();
+        // addNewDoor();
+        // addNewDoor();
+
+        var p = 0;
+        function update()
+        {
+            p += 0.01;
+            document.getElementById("progress").style.setProperty("--progress", p)
+            checkWhatToUnlock();
+            buyDoorPrice.textContent = `$${formatNumber(doorPrice())}`;
+            buyGnomePrice.textContent = `$${formatNumber(gnomePrice())}`;
+            moneyLabel.textContent = `$${formatNumber(money)}`;
+            for (var i = 0; i <= 10; i++) {
+                var doorObj = doors[i];
+
+                if (doorObj.lvl > 0) {
+                    doorObj.lvlLabel.textContent = Math.pow(2, doorObj.lvl);
+                } else {
+                    doorObj.lvlLabel.textContent = "";
+                }
+
+                doorObj.door.classList.toggle("hidden", !doorObj.unlocked);
+                doorObj.door.classList.toggle("locked", doorObj.free);
+                
+                // if (i < doorCount) {
+                //     if (!doorObj.unlocked) {
+                //         doorObj.unlocked = true;
+                //         doorObj.door.classList.toggle("hidden", false);
+                //     }
+                // } else {
+                //     doorObj.door.classList.toggle("hidden", true);
+                // }
+            }
+            gnomeMovementLogic();
+            for (var i = 0; i <= 10; i++) {
+                var gnomeObj = gnomes[i];
+                
+                if (i < gnomeCount) {
+                    if (!gnomeObj.unlocked) {
+                        gnomeObj.unlocked = true;
+                        gnomeObj.gnome.classList.toggle("hidden", false);
+                        gnomeObj.gnome.style.setProperty("--x", 0);
+                    }
+                } else {
+                    gnomeObj.gnome.classList.toggle("hidden", true);
+                }
+
+                if (gnomeObj.unlocked) {
+                    if (gnomeObj.target != null) {
+                        if (!gnomeObj.target.closed) {
+                            gnomeObj.target = null;
+                            continue;
+                        }
+                        var gnomeRect = gnomeObj.gnome.getBoundingClientRect();
+                        var targetRect = gnomeObj.target.door.getBoundingClientRect();
+                        if (Math.abs(gnomeRect.left - targetRect.left) <= 2) {
+                            openDoor(gnomeObj.target);
+                            gnomeObj.target = null;
+                        } else {
+                            var dist = 2;
+                            if (gnomeRect.left >= targetRect.left) {
+                                dist = -2;
+                            }
+                            var x = parseInt(gnomeObj.gnome.style.getPropertyValue("--x"));
+                            gnomeObj.gnome.style.setProperty("--x", x + dist)
+                        }
+                    }
+                }
+            }
+        }
+        setInterval(update, delta);
+        // doorClose.addEventListener("click", function () {
+        //     doorOpen.classList.toggle("hidden", false);
+        //     doorClose.classList.toggle("hidden", true);
+        // })
+    </script>
+</body>
