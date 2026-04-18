@@ -4,7 +4,6 @@
     <style>
         html {
             user-select: none;
-            background-image: url('./Wallpaper.png');
             background-repeat: repeat;
             overflow: hidden
         }
@@ -150,12 +149,14 @@
         .upgrade-container.locked img {
             filter: brightness(0);
         }
-        .locked {
-            filter: brightness(0);
+        .door.locked {
+            opacity: 0.3;
+            /* filter: brightness(0); */
         }
         #upgrades {
             position: absolute;
             padding-top: 40px;
+            pointer-events: all;
         }
         .sale-label {
             position: absolute;
@@ -211,61 +212,106 @@
         .dragging {
             z-index: 999;
         }
+        #viewport {
+            position: relative;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+        }
+        #app {
+            min-width: 800px;
+            background-image: url('./Wallpaper.png');
+        }
+        #hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            pointer-events: none;
+        }
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            pointer-events: auto;
+        }
+        #effect {
+            position: relative;
+        }
+        #money {
+            text-align: center;
+        }
+        #stuff {
+            position: relative;
+        }
     </style>
 </head>
 <body>
-    <div class="overlay progress full hidden">
-        <div id="progress" class="progress-fill"></div>
-    </div>
-    <!-- <img src="Cat.gif"/> -->
-    <div id="upgrades">
-        <div id="buyDoorCard" class="upgrade-container locked">
-            <img id="buyDoor" class="clickable" src="Item1.png" height="110" width="110"/>
-            <span id="buyDoorPrice" class="sale-label">$10</span>
+    <div id="viewport">
+        <div class="overlay progress full hidden">
+            <div id="progress" class="progress-fill"></div>
         </div>
-        <div id="buyOvenCard" class="upgrade-container locked">
-            <img id="buyOven" class="clickable" src="Item2.png" height="110" width="110"/>
-            <span id="buyOvenPrice" class="sale-label">$100</span>
-        </div>
-        <div id="buyGnomeCard" class="upgrade-container locked">
-            <img id="buyGnome" class="clickable" src="Item3.png" height="110" width="110"/>
-            <span id="buyGnomePrice" class="sale-label">$1K</span>
-        </div>
-    </div>
-    <div clas="hidden" id="research">
-        <div class="card clickable hidden">
-            <img class="clickable" src="DoorIcon.png" height="32" width="32"/> <b>Faster doors</b>
-            <br>
-            <br>
-            door closing in 0.8s
-            <br>
-            <div style="position: absolute; top: 0px; right: 0px; padding: 8px;">
-                <img class="clickable" src="FoodIcon.png" height="24" width="24"/> <b>3</b>
+        <!-- <img src="Cat.gif"/> -->
+        <div id="hud" class="hbox">
+            <div id="upgrades">
+                <div id="buyDoorCard" class="upgrade-container locked">
+                    <img id="buyDoor" class="clickable" src="Item1.png" height="110" width="110"/>
+                    <span id="buyDoorPrice" class="sale-label">$10</span>
+                </div>
+                <div id="buyOvenCard" class="upgrade-container locked">
+                    <img id="buyOven" class="clickable" src="Item2.png" height="110" width="110"/>
+                    <span id="buyOvenPrice" class="sale-label">$100</span>
+                </div>
+                <div id="buyGnomeCard" class="upgrade-container locked">
+                    <img id="buyGnome" class="clickable" src="Item3.png" height="110" width="110"/>
+                    <span id="buyGnomePrice" class="sale-label">$1K</span>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div id="effects" class="overlay"></div>
-    <div id="app" class="vbox hstretch">
-        <div id="upgrades" class="hbox">
-            <div>
+            <div class="full">
                 <p class="label" id="money">$0</p>
                 <div>
-
+    
                 </div>
             </div>
         </div>
-        <div id="oven" class="hidden">
-            <img id="ovenOpen" class="clickable" src="OvenOpen.png" height="110" width="110"/>
-            <img id="ovenClose" class="clickable hidden" src="OvenClosed.png" height="110" width="110"/>
-        </div>
-        <div class="vbox hstretch full">
-            <div>
-                <button class="hidden" id="buyMerge">merge all</button>
+        <div clas="hidden" id="research">
+            <div class="card clickable hidden">
+                <img class="clickable" src="DoorIcon.png" height="32" width="32"/> <b>Faster doors</b>
+                <br>
+                <br>
+                door closing in 0.8s
+                <br>
+                <div style="position: absolute; top: 0px; right: 0px; padding: 8px;">
+                    <img class="clickable" src="FoodIcon.png" height="24" width="24"/> <b>3</b>
+                </div>
             </div>
-            <div class="container full vbox">
-                <div id="gnomes"></div>
-                <div id="doors" class="line full"></div>
+        </div>
+    
+        <div id="game-container">
+            <div id="stuff">
+                <div id="effects" class="overlay"></div>
+            </div>
+            <div id="app" class="vbox hstretch">
+                <div id="oven" class="hidden">
+                    <img id="ovenOpen" class="clickable" src="OvenOpen.png" height="110" width="110"/>
+                    <img id="ovenClose" class="clickable hidden" src="OvenClosed.png" height="110" width="110"/>
+                </div>
+                <div class="vbox hstretch full">
+                    <div>
+                        <button class="hidden" id="buyMerge">merge all</button>
+                    </div>
+                    <div class="container hstretch full vbox">
+                        <div id="gnomes"></div>
+                        <div id="doors" class="line full"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -276,6 +322,10 @@
     <source src="minecraft-door-close.mp3" type="audio/mpeg">
     </audio>
     <script type="text/javascript">
+        window.addEventListener('load', () => {
+        document.getElementById("doors").scrollIntoView({ block: "center", behavior: "instant", inline: "center" });
+        });
+
         var doorsContainer = document.getElementById("doors");
         var effectsContainer = document.getElementById("effects");
         var gnomesContainer = document.getElementById("gnomes");
@@ -295,6 +345,8 @@
         var ovenOpen = document.getElementById("ovenOpen");
         var ovenClose = document.getElementById("ovenClose");
 
+        var gameContainer = document.getElementById("game-container");
+
         ovenOpen.addEventListener("click", function () {
             ovenOpen.classList.toggle("hidden", true);
             ovenClose.classList.toggle("hidden", false);
@@ -307,8 +359,8 @@
 
         var gnomeCount = 0;
         var doorCount = 0;
-        var totalMoney = 0;
-        var money = 0;
+        var totalMoney = 10;
+        var money = 10;
         var ovenCount = 0;
         var mergeMode = false;
         var cashdrops = {};
@@ -347,9 +399,9 @@
             var rect = cash.getBoundingClientRect();
 
             span.style.top = rect.top;
-            span.style.left = rect.left;
+            span.style.left = rect.left + gameContainer.scrollLeft;
             effectsContainer.appendChild(span);
-            setTimeout(() => span.remove(), 1000    );
+            setTimeout(() => span.remove(), 1000);
         }
         function playChickenDropAnimation(oven) {
             if (dropCounter > 20) dropCounter = 0;
@@ -367,7 +419,7 @@
             const finalRot = 0; //Math.floor(Math.random() * 720) - 360;
 
             food.style.top = rect.top + rect.height /2 + "px";
-            food.style.left = rect.left  + "px";;
+            food.style.left = rect.left + gameContainer.scrollLeft + "px";;
             food.style.setProperty('--drop-x', `${finalX}px`);
             food.style.setProperty('--drop-rot', `${finalRot}deg`);
 
@@ -405,7 +457,7 @@
             const finalRot = 0; //Math.floor(Math.random() * 720) - 360;
 
             cash.style.top = rect.top + rect.height /2 + "px";
-            cash.style.left = rect.left  + "px";;
+            cash.style.left = rect.left + gameContainer.scrollLeft  + "px";;
             cash.style.setProperty('--drop-x', `${finalX}px`);
             cash.style.setProperty('--drop-rot', `${finalRot}deg`);
 
@@ -414,11 +466,10 @@
             cash.classList.remove('drop'); 
             void cash.offsetWidth;
             cash.classList.add("drop");
+            cash.classList.toggle("landed", false)
             setTimeout(() => cash.classList.toggle("landed", true), 800);
             setTimeout(() => {
-                if (cash.classList.contains("landed")) {
-                    despawnCash(cash);
-                }
+                despawnCash(cash);
             }, 2000);
         }
 
@@ -515,6 +566,7 @@
             return null;
         }
         function finalizeMerge(e) {
+            if (activeDoor == null) return;
             moveDoorToPos(activeDoor.door, 0, 0);
             activeDoor.door.classList.toggle("dragging", false);
             activeDoor.dragging = false;
@@ -538,6 +590,7 @@
         var offsetY = 0;
 
         window.addEventListener('pointermove', (e) => {
+            e.preventDefault(); 
             if (!activeDoor) return;
 
             activeDoor.door.setPointerCapture(e.pointerId);
@@ -547,7 +600,7 @@
             var y = e.clientY - boardRect.top - offsetY;
 
             moveDoorToPos(activeDoor.door, x, y);
-        });
+        }, { passive: false });
         window.addEventListener('pointerup', finalizeMerge);
         window.addEventListener('pointercancel', finalizeMerge);
         var doors = [];
@@ -560,17 +613,28 @@
             let doorOpen = document.getElementById(`door-${i}-opened`);
             let doorObj = {id: i, lvl: 0, open: doorOpen, close: doorClose,
                             unlocked: false, dragging: false, lvlLabel:doorLvl, door, closed: true, free: true };
+
+            // VERY IMPORTANT DO NOT REMOVE
+            door.addEventListener('touchstart', (e) => {
+                e.stopPropagation(); 
+            }, { passive: false });
+            door.addEventListener('touchmove', (e) => {
+                e.preventDefault(); 
+            }, { passive: false });
+
             door.addEventListener("pointerdown", function (e) {
+                e.stopPropagation(); 
                 if (activeDoor != null) return;
                 if (doorObj.free) return;
                 doorObj.dragging = true;
                 // doorObj.closed = true;
                 activeDoor = doorObj;
                 const rect = activeDoor.door.getBoundingClientRect();
-                offsetX = e.clientX;
+                offsetX = e.clientX + gameContainer.scrollLeft;
+                // offsetX = e.clientX;
                 offsetY = e.clientY - rect.top;
                 door.classList.toggle("dragging", true);
-            })
+            }, { passive: false })
             doors.push(doorObj);
             door.addEventListener("click", function (e) {
                 if (doorObj.closed) {
